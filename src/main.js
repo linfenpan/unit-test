@@ -32,7 +32,6 @@ extend(UnitTest.prototype, {
 
   initDescript: function() {
     var ctx = this;
-
     var descript = function(desc, unitTestFn) {
       var self = this;
       var ctx = self.ctx;
@@ -48,7 +47,7 @@ extend(UnitTest.prototype, {
     };
 
     ctx.descript = sameContext(
-      idFactory(layerFactory(descript)), { ctx: ctx }
+      idFactory(layerFactory(forbiddenEmbed(descript, 'descript'))), { ctx: ctx }
     );
   },
 
@@ -67,7 +66,7 @@ extend(UnitTest.prototype, {
       descriptor.runs.push({ text: text, run: run });
     };
 
-    ctx.it = sameContext(it);
+    ctx.it = sameContext(forbiddenEmbed(it, 'it'));
   },
 
   initRun: function() {
@@ -153,7 +152,6 @@ extend(UnitTest.prototype, {
 
   initTimeout: function() {
     var ctx = this;
-
     var timeout = function(time) {
       var descriptor = this.descriptor;
 
@@ -169,8 +167,7 @@ extend(UnitTest.prototype, {
 
   initBeforeAndAfter: function() {
     var ctx = this;
-
-    function pushFnToList(listName, fn) {
+    var pushFnToList = function(listName, fn) {
       if (!isFunction(fn)) {
         return;
       }
@@ -182,8 +179,7 @@ extend(UnitTest.prototype, {
       }
 
       descriptor[listName].push(fn);
-    }
-
+    };
     var before = function(fn) {
       pushFnToList.call(this, 'befores', fn);
     };

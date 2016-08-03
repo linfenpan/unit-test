@@ -57,3 +57,19 @@ function idFactory(fn) {
 
   return result;
 }
+
+// 函数不允许内嵌
+var forbiddenEmbed = (function() {
+  var frbMap = {};
+  return function(fn, key) {
+    return function() {
+      if (frbMap[key]) {
+        throw '"'+ key +'" can not be embedded';
+      }
+
+      frbMap[key] = 1;
+      fn.apply(this, arguments);
+      frbMap[key] = 0;
+    };
+  }
+})();

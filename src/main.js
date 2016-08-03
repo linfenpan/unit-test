@@ -31,32 +31,30 @@ extend(UnitTest.prototype, {
   },
 
   initDescript: function() {
+    var ID = 10000;
     var ctx = this;
     var descript = function(desc, unitTestFn) {
-      var self = this;
-      var ctx = self.ctx;
-
       checkArgs('descript', arguments);
 
-      self.descriptor = extend(ctx.getDescriptor(self.id), {
-        index: self.index,
+      ctx.descriptor = extend(ctx.getDescriptor(ID++), {
+        index: 1,
         desc: desc
       });
 
-      unitTestFn();
+      try {
+        unitTestFn();
+      } finally {
+        ctx.descriptor = null;
+      }
     };
 
-    ctx.descript = sameContext(
-      idFactory(layerFactory(forbiddenEmbed(descript, 'descript'))), { ctx: ctx }
-    );
+    ctx.descript = forbiddenEmbed(descript, 'descript');
   },
 
   initIt: function() {
     var ctx = this;
     var it = function(text, run) {
-      var self = this;
-      var ctx = self.ctx;
-      var descriptor = self.descriptor;
+      var descriptor = ctx.descriptor;
 
       if (!descriptor) {
         return;
@@ -66,7 +64,7 @@ extend(UnitTest.prototype, {
       descriptor.runs.push({ text: text, run: run });
     };
 
-    ctx.it = sameContext(forbiddenEmbed(it, 'it'));
+    ctx.it = forbiddenEmbed(it, 'it');
   },
 
   initRun: function() {
@@ -153,16 +151,11 @@ extend(UnitTest.prototype, {
   initTimeout: function() {
     var ctx = this;
     var timeout = function(time) {
-      var descriptor = this.descriptor;
-
-      if (!descriptor) {
-        descriptor = ctx.options;
-      }
-
+      var descriptor = ctx.descriptor || ctx.options;
       descriptor.timeout = time || DEFAULT_TIMEOUT;
     };
 
-    ctx.timeout = sameContext(timeout);
+    ctx.timeout = timeout;
   },
 
   initBeforeAndAfter: function() {
@@ -172,23 +165,18 @@ extend(UnitTest.prototype, {
         return;
       }
 
-      var descriptor = this.descriptor;
-
-      if (!descriptor) {
-        descriptor = ctx.options;
-      }
-
+      var descriptor = ctx.descriptor || ctx.options;
       descriptor[listName].push(fn);
     };
     var before = function(fn) {
-      pushFnToList.call(this, 'befores', fn);
+      pushFnToList('befores', fn);
     };
     var after = function(fn) {
-      pushFnToList.call(this, 'afters', fn);
+      pushFnToList('afters', fn);
     };
 
-    ctx.after = sameContext(after);
-    ctx.before = sameContext(before);
+    ctx.after = after;
+    ctx.before = before;
   },
 
   getDescriptor: function(id) {

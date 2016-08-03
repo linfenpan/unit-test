@@ -100,68 +100,29 @@ var logger = {
 'use strict';
 
 // 内嵌运行函数，统一上下文
-var sameContext = (function sameContext() {
-  var ctxs = [];
-  return function(fn, ctx) {
-    return function() {
-      var parentCtx = extend({}, ctxs[0] || {});;
-      if (ctxs.length > 0) {
-        ctxs[0] = parentCtx;
-      } else {
-        ctxs.unshift(parentCtx);
-      }
-
-      var currentCtx = extend({}, ctx);
-      currentCtx = extend(currentCtx, parentCtx);
-
-      ctxs.unshift(currentCtx);
-      try {
-        fn.apply(currentCtx, arguments);
-      } finally {
-        ctxs.shift();
-      }
-    };
-  };
-})();
-
-// 层次工厂
-function layerFactory(fn) {
-  var index = 1;
-
-  var result = function() {
-    var ctx = this;
-
-    if (!ctx.index) {
-      ctx.index = index;
-    }
-
-    index++;
-    try {
-      fn.apply(ctx, arguments);
-    } finally {
-      index--;
-    }
-  }
-
-  return result;
-}
-
-// id工厂，函数每次运行，都自带一个 id
-function idFactory(fn) {
-  var id = 10000;
-
-  var result = function () {
-    var ctx = this;
-
-    if (!ctx.id) {
-      ctx.id = id++;
-    }
-
-    fn.apply(ctx, arguments);
-  }
-
-  return result;
-}
+// var magiContext = (function sameContext() {
+//   var ctxs = [];
+//   return function(fn, ctx) {
+//     return function() {
+//       var parentCtx = extend({}, ctxs[0] || {});;
+//       if (ctxs.length > 0) {
+//         ctxs[0] = parentCtx;
+//       } else {
+//         ctxs.unshift(parentCtx);
+//       }
+//
+//       var currentCtx = extend({}, ctx);
+//       currentCtx = extend(currentCtx, parentCtx);
+//
+//       ctxs.unshift(currentCtx);
+//       try {
+//         fn.apply(currentCtx, arguments);
+//       } finally {
+//         ctxs.shift();
+//       }
+//     };
+//   };
+// })();
 
 // 函数不允许内嵌
 var forbiddenEmbed = (function() {
@@ -215,32 +176,30 @@ extend(UnitTest.prototype, {
   },
 
   initDescript: function() {
+    var ID = 10000;
     var ctx = this;
     var descript = function(desc, unitTestFn) {
-      var self = this;
-      var ctx = self.ctx;
-
       checkArgs('descript', arguments);
 
-      self.descriptor = extend(ctx.getDescriptor(self.id), {
-        index: self.index,
+      ctx.descriptor = extend(ctx.getDescriptor(ID++), {
+        index: 1,
         desc: desc
       });
 
-      unitTestFn();
+      try {
+        unitTestFn();
+      } finally {
+        ctx.descriptor = null;
+      }
     };
 
-    ctx.descript = sameContext(
-      idFactory(layerFactory(forbiddenEmbed(descript, 'descript'))), { ctx: ctx }
-    );
+    ctx.descript = forbiddenEmbed(descript, 'descript');
   },
 
   initIt: function() {
     var ctx = this;
     var it = function(text, run) {
-      var self = this;
-      var ctx = self.ctx;
-      var descriptor = self.descriptor;
+      var descriptor = ctx.descriptor;
 
       if (!descriptor) {
         return;
@@ -250,7 +209,7 @@ extend(UnitTest.prototype, {
       descriptor.runs.push({ text: text, run: run });
     };
 
-    ctx.it = sameContext(forbiddenEmbed(it, 'it'));
+    ctx.it = forbiddenEmbed(it, 'it');
   },
 
   initRun: function() {
@@ -337,16 +296,11 @@ extend(UnitTest.prototype, {
   initTimeout: function() {
     var ctx = this;
     var timeout = function(time) {
-      var descriptor = this.descriptor;
-
-      if (!descriptor) {
-        descriptor = ctx.options;
-      }
-
+      var descriptor = ctx.descriptor || ctx.options;
       descriptor.timeout = time || DEFAULT_TIMEOUT;
     };
 
-    ctx.timeout = sameContext(timeout);
+    ctx.timeout = timeout;
   },
 
   initBeforeAndAfter: function() {
@@ -356,23 +310,18 @@ extend(UnitTest.prototype, {
         return;
       }
 
-      var descriptor = this.descriptor;
-
-      if (!descriptor) {
-        descriptor = ctx.options;
-      }
-
+      var descriptor = ctx.descriptor || ctx.options;
       descriptor[listName].push(fn);
     };
     var before = function(fn) {
-      pushFnToList.call(this, 'befores', fn);
+      pushFnToList('befores', fn);
     };
     var after = function(fn) {
-      pushFnToList.call(this, 'afters', fn);
+      pushFnToList('afters', fn);
     };
 
-    ctx.after = sameContext(after);
-    ctx.before = sameContext(before);
+    ctx.after = after;
+    ctx.before = before;
   },
 
   getDescriptor: function(id) {

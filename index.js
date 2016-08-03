@@ -115,8 +115,11 @@ var sameContext = (function sameContext() {
       currentCtx = extend(currentCtx, parentCtx);
 
       ctxs.unshift(currentCtx);
-      fn.apply(currentCtx, arguments);
-      ctxs.shift();
+      try {
+        fn.apply(currentCtx, arguments);
+      } finally {
+        ctxs.shift();
+      }
     };
   };
 })();

@@ -1,6 +1,6 @@
 {
   "name": "@lfp/unit-test",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "unit test framework",
   "main": "index.js",
   "scripts": {

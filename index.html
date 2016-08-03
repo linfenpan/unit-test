@@ -27,7 +27,17 @@
       before = ut.before,
       after = ut.after;
 
+  before(function(next) {
+    console.log('before');
+    next();
+  });
+
   descript('开始测试', function() {
+    after(function(next) {
+      console.log('after');
+      next();
+    });
+
     // timeout(3000);
     it('普通模块', function(done) {
       done();
@@ -42,7 +52,7 @@
 
   descript('测试抛出异常', function() {
     it('应该抛出异常', function(done) {
-      throw '正常抛出，阻断执行';
+      throw new Error('正常抛出，阻断执行');
       done();
     });
   });

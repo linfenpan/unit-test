@@ -10,7 +10,7 @@ descript('test unit 1', () => {
   });
 
   it('should done too', done => {
-    throw 'stop here';
+    // throw new Error('stop here');
     done();
   });
 });

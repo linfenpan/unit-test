@@ -86,9 +86,9 @@ extend(UnitTest.prototype, {
         next: function(item, next) {
           // item -> { index, desc, runs, id }
           var desc = item.desc;
-          logger.log('START: ' + desc);
 
           runFnList(options.befores, function() {
+            logger.log('START: ' + desc);
             ctx.sequentTest(item, function() {
               logger.log('END: '+ desc);
               logger.log('  ');
@@ -119,29 +119,29 @@ extend(UnitTest.prototype, {
       list: runs.slice(0),
       next: function(item, next) {
         // item -> { text, run }
-        var fn = item.run;
+        var run = item.run;
         var text = item.text;
-
-        logger.log(addSpace(text, textIndex));
 
         clearTimer();
         timer = setTimeout(function() {
-          next = noop;
-          logger.error(addSpace('timeout', textIndex));
+          throw 'timeout';
         }, timeout);
 
-        try {
-          runFnList(descriptor.befores, function() {
-            fn(function() {
+        runFnList(descriptor.befores, function() {
+          logger.log(addSpace(text, textIndex));
+          try {
+            run(function() {
+              clearTimer();
               logger.success(addSpace('success', textIndex + 1));
               runFnList(descriptor.afters, function() {
                 next();
               });
             });
-          });
-        } finally {
-          clearTimer();
-        }
+          } catch (e) {
+            clearTimer();
+            throw e;
+          }
+        });
       },
       end: function() {
         clearTimer();

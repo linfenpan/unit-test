@@ -1,4 +1,4 @@
-/*! @lfp/unit-test-0.0.1 by da宗熊 MIT https://github.com/linfenpan/unit-test#readme*/
+/*! unitTest.js-0.0.2 by da宗熊 MIT https://github.com/linfenpan/unit-test#readme*/
 (function (root, factory) {
   if (typeof define === 'function') {
     if (define.amd) {
@@ -87,13 +87,13 @@ function addSpace(str, spaceCount) {
 
 var logger = {
   log: function(message) {
-    console.log('%c' + message, 'color: orangered');
+    console.log(message);
   },
   error: function(message) {
     console.error(message);
   },
   success: function(message) {
-    console.log('%c' + message, 'color: green');
+    console.log(message);
   }
 };
 
@@ -299,14 +299,8 @@ extend(UnitTest.prototype, {
               });
             });
           });
-        } catch (e) {
+        } finally {
           clearTimer();
-
-          if (isString(e)) {
-            logger.error(addSpace(e, textIndex));
-          } else {
-            throw e;
-          }
         }
       },
       end: function() {

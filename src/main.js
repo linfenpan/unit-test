@@ -140,14 +140,8 @@ extend(UnitTest.prototype, {
               });
             });
           });
-        } catch (e) {
+        } finally {
           clearTimer();
-
-          if (isString(e)) {
-            logger.error(addSpace(e, textIndex));
-          } else {
-            throw e;
-          }
         }
       },
       end: function() {

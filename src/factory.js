@@ -34,8 +34,11 @@ function layerFactory(fn) {
     }
 
     index++;
-    fn.apply(ctx, arguments);
-    index--;
+    try {
+      fn.apply(ctx, arguments);
+    } finally {
+      index--;
+    }
   }
 
   return result;
@@ -68,8 +71,11 @@ var forbiddenEmbed = (function() {
       }
 
       frbMap[key] = 1;
-      fn.apply(this, arguments);
-      frbMap[key] = 0;
+      try {
+        fn.apply(this, arguments);
+      } finally {
+        frbMap[key] = 0;
+      }
     };
   }
 })();

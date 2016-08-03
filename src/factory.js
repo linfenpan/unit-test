@@ -1,59 +1,59 @@
 'use strict';
 
-// 层次工厂
-var layerFactory = {
-  process: function(fn) {
-    var index = 1;
-
-    var result = function() {
-      var ctx = getPureContext(this);
-
-      if (!ctx.index) {
-        ctx.index = index;
+// 内嵌运行函数，统一上下文
+var sameContext = (function sameContext() {
+  var ctxs = [];
+  return function(fn, ctx) {
+    return function() {
+      var parentCtx = extend({}, ctxs[0] || {});;
+      if (ctxs.length > 0) {
+        ctxs[0] = parentCtx;
+      } else {
+        ctxs.unshift(parentCtx);
       }
 
-      index++;
-      fn.apply(ctx, arguments);
-      index--;
+      var currentCtx = extend({}, ctx);
+      currentCtx = extend(currentCtx, parentCtx);
+
+      ctxs.unshift(currentCtx);
+      fn.apply(currentCtx, arguments);
+      ctxs.shift();
+    };
+  };
+})();
+
+// 层次工厂
+function layerFactory(fn) {
+  var index = 1;
+
+  var result = function() {
+    var ctx = this;
+
+    if (!ctx.index) {
+      ctx.index = index;
     }
 
-    return result;
+    index++;
+    fn.apply(ctx, arguments);
+    index--;
   }
-};
+
+  return result;
+}
 
 // id工厂，函数每次运行，都自带一个 id
-var idFactory = {
-  process: function(fn) {
-    var id = 10000;
-    var newIdCounter = 0;
-    var stackCounter = 0;
+function idFactory(fn) {
+  var id = 10000;
 
-    var result = function () {
-      var ctx = getPureContext(this);
+  var result = function () {
+    var ctx = this;
 
-      if (stackCounter === 0) {
-        id += newIdCounter;
-        newIdCounter = 0;
-      }
-
-      if (!ctx.id) {
-        ctx.id = id++;
-        newIdCounter++;
-      }
-
-      result.currentId = ctx.id;
-
-      stackCounter++;
-      fn.apply(ctx, arguments);
-      stackCounter--;
-
-      if (stackCounter === 0) {
-        result.currentId = id = id - newIdCounter;
-      } else {
-        result.currentId = ctx.id - 1;
-      }
+    if (!ctx.id) {
+      ctx.id = id++;
     }
 
-    return result;
+    fn.apply(ctx, arguments);
   }
-};
+
+  return result;
+}

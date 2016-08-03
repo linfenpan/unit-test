@@ -1,5 +1,7 @@
 'use strict';
 
+function noop() {}
+
 function type(o) {
   return Object.prototype.toString.call(o)
     .split(' ')[1]
@@ -29,6 +31,13 @@ function forEach(arr, fn) {
   }
 }
 
+function extend(obj, source) {
+  keys(source, function(key, value) {
+    obj[key] = value;
+  });
+  return obj;
+}
+
 function recurList(options) {
   options = options || {};
   var list = options.list;
@@ -50,13 +59,6 @@ function recurList(options) {
   again();
 }
 
-function getPureContext(ctx) {
-  var key = '__pure_ctx_';
-
-  if (!ctx || !ctx[key]) {
-    ctx = {};
-    ctx[key] = 1;
-  }
-
-  return ctx;
+function addSpace(str, spaceCount) {
+  return new Array(spaceCount || 0 + 1).join('  ') + str;
 }

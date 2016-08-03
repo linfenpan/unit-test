@@ -1,16 +1,13 @@
 'use strict';
 
 var logger = {
-  log: function(message, spaceCount) {
-    console.log(logger.buildSpace(message, spaceCount));
+  log: function(message) {
+    console.log('%c' + message, 'color: orangered');
   },
-  error: function(message, spaceCount) {
-    console.error(logger.buildSpace(message, spaceCount));
+  error: function(message) {
+    console.error(message);
   },
-  success: function(message, spaceCount) {
-    console.log('%c' + logger.buildSpace(message, spaceCount), 'color:green');
-  },
-  buildSpace: function(str, count) {
-    return new Array(count || 0 + 1).join('  ') + str;
+  success: function(message) {
+    console.log('%c' + message, 'color: green');
   }
 };

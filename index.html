@@ -5,27 +5,52 @@
   <title>单元测试</title>
 </head>
 <body>
+
+[x]1. 有 parentId 的概念？<br/>
+[o]2. 有全局 before/after 的概念，全局的是针对每个 descript<br/>
+[o]3. 有局部 before/after 的概念，针对当前descript中，每一次运行 it 完毕之后<br/>
+4. 在 descript 中，不可以有子 descrip<br/>
+5. 每个 it 中，也禁止存在 it，如果存在，则也是抛异常吧<br/>
+
 <script src="./src/util.js"></script>
 <script src="./src/logger.js"></script>
 <script src="./src/factory.js"></script>
 <script src="./src/main.js"></script>
+<!-- <script src="./index-min.js"></script> -->
 <script>
   'use strict';
+  var ut = UnitTest();
+  var descript = ut.descript,
+      it = ut.it,
+      timeout = ut.timeout,
+      run = ut.run,
+      before = ut.before,
+      after = ut.after;
+
+  // before(function(next) {
+  //   console.log('hi');
+  //   next();
+  // });
 
   descript('开始测试', function() {
-    it('测试应该正常通过', function(done) {
+    // timeout(3000);
+    it('普通模块', function(done) {
       done();
     });
 
-    it('测试不通过', function(done) {
-      throw '不能通过';
-      done();
+    it('异步模块', function(done) {
+      setTimeout(function() {
+        done();
+      }, 200);
     });
   });
 
-  // descript('mmmx', function() {
-  //   it('hhh', function(){})
-  // })
+  descript('测试抛出异常', function() {
+    it('应该抛出异常', function(done) {
+      // throw '正常抛出，阻断执行';
+      done();
+    });
+  });
 
   run();
 </script>

@@ -1,3 +1,162 @@
+/*! @lfp/unit-test-0.0.1 by da宗熊 MIT https://github.com/linfenpan/unit-test#readme*/
+(function (root, factory) {
+  if (typeof define === 'function') {
+    if (define.amd) {
+      // AMD
+      define(factory);
+    } else {
+      // CMD
+      define(function(require, exports, module) {
+        module.exports = factory();
+      });
+    }
+  } else if (typeof exports === 'object') {
+    // Node, CommonJS之类的
+    module.exports = factory();
+  } else {
+    // 浏览器全局变量(root 即 window)
+    root.UnitTest = factory();
+  }
+}(this, function ($) {
+'use strict';
+
+function noop() {}
+
+function type(o) {
+  return Object.prototype.toString.call(o)
+    .split(' ')[1]
+    .slice(0, -1)
+    .toLowerCase();
+}
+
+function isFunction(fn) {
+  return type(fn) === 'function';
+}
+
+function isString(str) {
+  return type(str) === 'string';
+}
+
+function keys(obj, fn) {
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      fn.call(obj, key, obj[key]);
+    }
+  }
+}
+
+function forEach(arr, fn) {
+  for (var i = 0, len = arr.length; i < len; i++) {
+    fn.call(arr, arr[i], i);
+  }
+}
+
+function extend(obj, source) {
+  keys(source, function(key, value) {
+    obj[key] = value;
+  });
+  return obj;
+}
+
+function recurList(options) {
+  options = options || {};
+  var list = options.list;
+  var next = options.next;
+  var endCallback = options.end;
+
+  function again() {
+    var item = list.shift();
+
+    if (item) {
+      next(item, function() {
+        again();
+      });
+    } else {
+      endCallback && endCallback();
+    }
+  }
+
+  again();
+}
+
+function addSpace(str, spaceCount) {
+  return new Array(spaceCount || 0 + 1).join('  ') + str;
+}
+
+'use strict';
+
+var logger = {
+  log: function(message) {
+    console.log('%c' + message, 'color: orangered');
+  },
+  error: function(message) {
+    console.error(message);
+  },
+  success: function(message) {
+    console.log('%c' + message, 'color: green');
+  }
+};
+
+'use strict';
+
+// 内嵌运行函数，统一上下文
+var sameContext = (function sameContext() {
+  var ctxs = [];
+  return function(fn, ctx) {
+    return function() {
+      var parentCtx = extend({}, ctxs[0] || {});;
+      if (ctxs.length > 0) {
+        ctxs[0] = parentCtx;
+      } else {
+        ctxs.unshift(parentCtx);
+      }
+
+      var currentCtx = extend({}, ctx);
+      currentCtx = extend(currentCtx, parentCtx);
+
+      ctxs.unshift(currentCtx);
+      fn.apply(currentCtx, arguments);
+      ctxs.shift();
+    };
+  };
+})();
+
+// 层次工厂
+function layerFactory(fn) {
+  var index = 1;
+
+  var result = function() {
+    var ctx = this;
+
+    if (!ctx.index) {
+      ctx.index = index;
+    }
+
+    index++;
+    fn.apply(ctx, arguments);
+    index--;
+  }
+
+  return result;
+}
+
+// id工厂，函数每次运行，都自带一个 id
+function idFactory(fn) {
+  var id = 10000;
+
+  var result = function () {
+    var ctx = this;
+
+    if (!ctx.id) {
+      ctx.id = id++;
+    }
+
+    fn.apply(ctx, arguments);
+  }
+
+  return result;
+}
+
 'use strict';
 
 var DEFAULT_TIMEOUT = 5000;
@@ -244,3 +403,6 @@ function runFnList(list, callback) {
     }
   });
 }
+
+  return UnitTest;
+}));
